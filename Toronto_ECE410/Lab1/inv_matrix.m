@@ -1,3 +1,4 @@
+% author: Soon Chee Loong
 % This file examines both the accuracy and execution speed of running inv() as well as mldivide (\)
 % \ => mldivide => Matrix Left Divide
 % / => mrdivide => Matrix Right Divide
