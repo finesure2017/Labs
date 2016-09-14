@@ -52,20 +52,16 @@ Q = orth(randn(n, n));
 d = logspace(0, -10, n);
 % Create a matrix A created by diagonalization => A is diagonalizable
 A = Q*diag(d)*Q;
-% initialize random vector x
-x = randn(n, 1);
-% Calculate b
-b = A*x;
-'A is:'
 A
-'Compute A^-1 using inv()'
-inv(A)
-'Compute A^-1 using mldivide()'
-% Ax = B => (A^-1)(A)x = (A^-1)B  approx. ~ A\B => (A^-1)B(B^-1) = (A\B)(B^-1) approx. ~ (A\B)/B
-% (A\b)/b TODO: THIS IS WRONG, FIGURE OUT
+invA = inv(A)
+I = A*inv(A)
+% Compute A^-1 using mldivide()
+% AA^-1 = I => A^-1 = A\I
+invAMlDivide = A\I
 pause(1)
-'Compute A^-1 using mrdivide()'
-% TODO: Figure this out
+% Compute A^-1 using mrdivide()
+% A^-1A = I => I/A
+invAMrDivide = I/A
 %----------------------------------------------------------------------------------------
 %% Matrix Solution
 'LAB 1, 3.II c) SOLUTION OF LINEAR EQUATIONS'
@@ -147,9 +143,9 @@ A = [7 2 -3; 4 6 -4 ; 5 2 -1]
 %%
 'LAB 1, 3.IV b) EIGENVALUES & EIGENVECTORS using eig with nobalance'
 A = [7 2 -3; 4 6 -4 ; 5 2 -1]
-[V,D] = eig(A,'nobalance')
-% TODO: Do this exercisea after figure out why nobalance doesn't do anything
+[Vnobalance,D] = eig(A,'nobalance')
 % Determine 3 eigenvectors of A whose entries are all integers
+eigen3WithIntegerEntries = [1 1 1; 2 1 0; 3 1 1]
 %%
 'LAB 1, 3.IV c) CHARACTERISTIC POLYNOMIAL'
 % Get the coefficients of the polynomial det(sI - A)
@@ -168,8 +164,15 @@ A = [7 2 -3; 4 6 -4 ; 5 2 -1]
 % AV = VD where D is a diagonal matrix consisting of eigenvalues of A 
 % Determine norm(AV-VD) , show more significant digits using long() 
 format('long')
-norm(A*V - V*D)
-% TODO: Determine exact values of eigenvalues and eigenvectors
+normOfAvMinusVd = norm(A*V - V*D)
+% Determine exact values of eigenvalues and eigenvectors
+eigenValues = [2 6 4] % Just by referring to D
+% Since (2,1) is 2* of (1,1) and (3,1) is 3* of (1,1)
+eigenVectorA = [1; 2; 3]
+% Since (1,2), (2,2), and (3,2) are all the same values
+eigenVectorB = [1; 1; 1] 
+% Since (1,3) and (3,3) are the same values
+eigenVectorC = [1; 0; 1]
 % Verify AV-VD = 0
 verifyZero = A*V - V*D
 
@@ -184,7 +187,7 @@ A = [1 1; 0 1]
 % Show by hand calculation that eigenvalue is 1 with algebraic multiplicity 2 but only has 1 eigenvector => A isn't diagnolizable
 % Show that resulting doesn't satisfy AV = VD and can't diagonalize A
 [V, D] = eig(A)
-% notee: Matlab just repeats the eigenvalue twice which will be wrong.
+% note: Matlab just repeats the eigenvalue twice which will be wrong.
 verifyNotDiagonal = inv(V) * A * V
 % 
 verifyNotZero = A*V - V*D
@@ -197,33 +200,84 @@ JordanForm = jordan(A)
 %% Ordinary Differential Equations
 %----------------------------------------------------------------------------------------
 'LAB 1, 4 a) ODE Initialization'
-% TODO: Understand all the theory behind it
 A = [0 1; -4 -2]
 B = [0; 4]
 C = [1 0]
 D = 0
-% TODO: FIx the error of same number of cols and rows for AB
+% State Space System 
 sys = ss(A, B, C, D)
 
 'LAB 1, 4 b) PLOT STEP RESPONSE'
-[Y,T,X]=step(sys)
-plot(T,X)
 
+%{
+Step response of dynamic systems.
+    [Y,T] = step(SYS) computes the step response Y of the dynamic system SYS. 
+    The time vector T is expressed in the time units of SYS and the time 
+    step and final time are chosen automatically. For multi-input systems,
+    independent step commands are applied to each input channel. If SYS has 
+    NY outputs and NU inputs, Y is an array of size [LENGTH(T) NY NU] where 
+    Y(:,:,j) contains the step response of the j-th input channel.
+ 
+    For state-space models, 
+       [Y,T,X] = step(SYS) 
+    also returns the state trajectory X, an array of size [LENGTH(T) NX NU] 
+    for a system with NX states and NU inputs.
+%}
+[Y,T,X]=step(sys);
+% The 2 lines from plot represents
+plot(T,X)
+%%
 'LAB 1, 4 c) ZERO INITIAL CONDITION'
 A = [0 1; -4 -2]
 B = [0; 0]
-C = [1; 0]
-D = [0 0]
+C = [1 0]
+D = 0
 sys_init= ss(A, B, C, D)
 x0 = [0; 1]
 % Determine response due to only initial conditions
-[Y,T,X] = initial(sys_init,x0)
+%{ 
+Initial condition response of state-space models.
+    initial(SYS,X0) plots the undriven response of the state-space model SYS 
+    (created with SS) with initial condition X0 on the states. This response 
+    is characterized by the equations
+                         .
+      Continuous time:   x = A x ,  y = C x ,  x(0) = x0 
+      Discrete time:  x[k+1] = A x[k],  y[k] = C x[k],  x[0] = x0 .
+%}
+[Y,T,X] = initial(sys_init,x0);
 plot(T,X)
-
+%%
 'LAB 1, 4 c) NON-ZERO INITIAL CONDITION'
+A = [0 1; -4 -2]
+B = [0; 0]
+C = [1 0]
+D = 0
+sys_init= ss(A, B, C, D)
+x0 = [0; 1]
 % Define input to be a sinusoidal wave
 t = 0:0.01:20;
 u = sin(t);
 
 % Determine 2nd order equation due to initial condition and sinusoid defined above
-[Y,t,X]=lsim(sys,u,t,x0)
+%{
+lsim  Simulate time response of dynamic systems to arbitrary inputs.
+    lsim(SYS,U,T) plots the time response of the dynamic system SYS to the
+    input signal described by U and T. The time vector T is expressed in the
+    time units of SYS and consists of regularly spaced time samples. The 
+    matrix U has as many columns as inputs in SYS and its i-th row specifies 
+    the input value at time T(i). For example, 
+            t = 0:0.01:5;   u = sin(t);   lsim(sys,u,t)  
+    simulates the response of a single-input model SYS to the input 
+    u(t)=sin(t) during 5 time units.
+ 
+    For discrete-time models, U should be sampled at the same rate as SYS
+    (T is then redundant and can be omitted or set to the empty matrix).
+    For continuous-time models, choose the sampling period T(2)-T(1) small 
+    enough to accurately describe the input U.  lsim issues a warning when
+    U is undersampled and hidden oscillations may occur.
+          
+    lsim(SYS,U,T,X0) specifies the initial state vector X0 at time T(1) 
+    (for state-space models only). X0 is set to zero when omitted.
+%}
+[Y,t,X]=lsim(sys,u,t,x0);
+plot(t, X);
