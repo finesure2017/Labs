@@ -196,7 +196,34 @@ JordanForm = jordan(A)
 %----------------------------------------------------------------------------------------
 %% Ordinary Differential Equations
 %----------------------------------------------------------------------------------------
+'LAB 1, 4 a) ODE Initialization'
+% TODO: Understand all the theory behind it
+A = [0 1; -4 -2]
+B = [0; 4]
+C = [1 0]
+D = 0
+% TODO: FIx the error of same number of cols and rows for AB
+sys = ss(A, B, C, D)
 
+'LAB 1, 4 b) PLOT STEP RESPONSE'
+[Y,T,X]=step(sys)
+plot(T,X)
 
+'LAB 1, 4 c) ZERO INITIAL CONDITION'
+A = [0 1; -4 -2]
+B = [0; 0]
+C = [1; 0]
+D = [0 0]
+sys_init= ss(A, B, C, D)
+x0 = [0; 1]
+% Determine response due to only initial conditions
+[Y,T,X] = initial(sys_init,x0)
+plot(T,X)
 
+'LAB 1, 4 c) NON-ZERO INITIAL CONDITION'
+% Define input to be a sinusoidal wave
+t = 0:0.01:20;
+u = sin(t);
 
+% Determine 2nd order equation due to initial condition and sinusoid defined above
+[Y,t,X]=lsim(sys,u,t,x0)
