@@ -145,8 +145,58 @@ Z = NULL(A,'r') is a "rational" basis for the null space obtained
 A = [7 2 -3; 4 6 -4 ; 5 2 -1]
 [V,D] = eig(A)
 %%
-A = [7 2 -3; 4 6 -4 ; 5 2 -1]
 'LAB 1, 3.IV b) EIGENVALUES & EIGENVECTORS using eig with nobalance'
-[V,D] = eig(A, 'nobalance')
-% TODO: Do this exercise
+A = [7 2 -3; 4 6 -4 ; 5 2 -1]
+[V,D] = eig(A,'nobalance')
+% TODO: Do this exercisea after figure out why nobalance doesn't do anything
 % Determine 3 eigenvectors of A whose entries are all integers
+%%
+'LAB 1, 3.IV c) CHARACTERISTIC POLYNOMIAL'
+% Get the coefficients of the polynomial det(sI - A)
+% Thus it's s^3 -12s^2 + 44s - 48 = 0
+p = poly(A)
+% This finds the roots to the polynomial above,
+% which results in the eigenvalues
+roots(p)
+
+% Note: Can also get p using this
+p2 = poly(eig(A))
+%%
+'LAB 1, 3.IV d) AV - VD'
+A = [7 2 -3; 4 6 -4 ; 5 2 -1]
+[V,D] = eig(A)
+% AV = VD where D is a diagonal matrix consisting of eigenvalues of A 
+% Determine norm(AV-VD) , show more significant digits using long() 
+format('long')
+norm(A*V - V*D)
+% TODO: Determine exact values of eigenvalues and eigenvectors
+% Verify AV-VD = 0
+verifyZero = A*V - V*D
+
+%% 
+'LAB 1, 3.IV e) DIAGONALIZABLE'
+A = [7 2 -3; 4 6 -4 ; 5 2 -1]
+[V,D] = eig(A)
+verifyDiagonal = inv(V) * A * V
+%% 
+'LAB 1, 3.IV e) REPEATED EIGENVALUES'
+A = [1 1; 0 1]
+% Show by hand calculation that eigenvalue is 1 with algebraic multiplicity 2 but only has 1 eigenvector => A isn't diagnolizable
+% Show that resulting doesn't satisfy AV = VD and can't diagonalize A
+[V, D] = eig(A)
+% notee: Matlab just repeats the eigenvalue twice which will be wrong.
+verifyNotDiagonal = inv(V) * A * V
+% 
+verifyNotZero = A*V - V*D
+%% 
+'LAB 1, 3.IV f) JORDAN FORM'
+A = [0 4 3; 0 20 16; 0 -25 -20]
+% When A isn't diagonalizable, can find Jordan Form instead, which is the next best thing to diagonal matrices
+JordanForm = jordan(A)
+%----------------------------------------------------------------------------------------
+%% Ordinary Differential Equations
+%----------------------------------------------------------------------------------------
+
+
+
+
