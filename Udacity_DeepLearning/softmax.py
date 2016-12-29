@@ -22,3 +22,21 @@ scores = np.vstack([x, np.ones_like(x)])
 plt.plot(x, softmax(scores).T, linewidth=2)
 # Note: That at every x, the sum between points on both graphs will equal 1
 plt.show()
+
+# When multiply all scores by a scalar > 1,
+# probabilities gets closer to  0 for smaller values and 1 for larger values
+# as the distances between the scores increases
+
+plt.plot(x, softmax(scores*10).T, linewidth=2)
+# Note: That at every x, the sum between points on both graphs will equal 1
+plt.show()
+
+# When divide all scores by a scalar > 1, 
+# probabilities gets closer to the uniform distribution
+# as the distance between the scores decreases.
+
+plt.plot(x, softmax(scores/10.0).T, linewidth=2)
+# Note: That at every x, the sum between points on both graphs will equal 1
+plt.show()
+
+# Therefore, increaseing size of outputs will increase confidence of classifier.
