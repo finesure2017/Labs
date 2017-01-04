@@ -30,14 +30,39 @@ def softmax(x):
         # For example, 2D Matrix means there are 2 dimensions
         # so maximum across 0th dimension is a single number
 
-        # Maximum across 1th dimension is an array,
+        '''
+        Nesting levels
+            axis = 0 => First '[' 
+            axis = 1 => Second '['
+            Thus, need to always go to deepest axis
+        x = [ 
+            [a b]
+            [c d] 
+            ] 
+        '''
+        # Maximum across 1st dimension is an array
         # with the maximum of each individual 2nd dimension onwards
         tmp = np.max(x, axis = 1)
+        print tmp
         # Numpy's broadcasting is in effect in the reshape below
         # For each column in 2D matrix x, every cell in each column
         # is deducting the same tmp variable that was re-shaped
-        x -= tmp.reshape((x.shape[0], 1))
+        '''
+        x = [             tmp = [
+            [a b]    -           max(a,b)
+            [c d]                max(c,d)
+            ]                   ] 
+
+        = 
+        x = [ 
+            [(a-max(a,b)) (b-max(a,b))]
+            [(c-max(c,d)) (d-max(c,d))] 
+            ] 
+            
+        '''
+        x -= tmp.reshape((x.shape[0], 1)) # x.shape = (2,2)
         x = np.exp(x)
+        # Divide by the sum across each nested sub array
         tmp = np.sum(x, axis = 1)
         x /= tmp.reshape((x.shape[0], 1))
     else:
@@ -62,6 +87,9 @@ def test_softmax_basic():
     assert np.amax(np.fabs(test1 - np.array(
         [0.26894142,  0.73105858]))) <= 1e-6
 
+    # Shifting by a constant  + 998 shouldn't change the probabilities 
+    # since softmax is invariance to shift
+    # from 3,4 to 1001, 1002
     test2 = softmax(np.array([[1001,1002],[3,4]]))
     print test2
     assert np.amax(np.fabs(test2 - np.array(
@@ -85,7 +113,7 @@ def test_softmax():
     """
     print "Running your tests..."
     ### YOUR CODE HERE
-    raise NotImplementedError
+    # raise NotImplementedError
     ### END YOUR CODE  
 
 if __name__ == "__main__":
