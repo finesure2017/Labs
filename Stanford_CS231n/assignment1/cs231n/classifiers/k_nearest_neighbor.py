@@ -1,10 +1,9 @@
 import numpy as np
-from past.builtins import xrange
+import sys
 
 
 class KNearestNeighbor(object):
   """ a kNN classifier with L2 distance """
-
   def __init__(self):
     pass
 
@@ -13,8 +12,7 @@ class KNearestNeighbor(object):
     Train the classifier. For k-nearest neighbors this is just 
     memorizing the training data.
 
-    Inputs:
-    - X: A numpy array of shape (num_train, D) containing the training data
+    Inputs: - X: A numpy array of shape (num_train, D) containing the training data
       consisting of num_train samples each of dimension D.
     - y: A numpy array of shape (N,) containing the training labels, where
          y[i] is the label for X[i].
@@ -65,15 +63,14 @@ class KNearestNeighbor(object):
     num_test = X.shape[0]
     num_train = self.X_train.shape[0]
     dists = np.zeros((num_test, num_train))
-    for i in xrange(num_test):
-      for j in xrange(num_train):
+    for i in range(num_test):
+      for j in range(num_train):
         #####################################################################
-        # TODO:                                                             #
         # Compute the l2 distance between the ith test point and the jth    #
         # training point, and store the result in dists[i, j]. You should   #
         # not use a loop over dimension.                                    #
         #####################################################################
-        pass
+        dists[i, j] = np.linalg.norm(X[i] - self.X_train[j])
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -89,13 +86,12 @@ class KNearestNeighbor(object):
     num_test = X.shape[0]
     num_train = self.X_train.shape[0]
     dists = np.zeros((num_test, num_train))
-    for i in xrange(num_test):
+    for i in range(num_test):
       #######################################################################
-      # TODO:                                                               #
       # Compute the l2 distance between the ith test point and all training #
       # points, and store the result in dists[i, :].                        #
       #######################################################################
-      pass
+      dists[i] = np.sqrt(np.sum((X[i] - self.X_train)**2, axis=1))
       #######################################################################
       #                         END OF YOUR CODE                            #
       #######################################################################
@@ -112,7 +108,6 @@ class KNearestNeighbor(object):
     num_train = self.X_train.shape[0]
     dists = np.zeros((num_test, num_train)) 
     #########################################################################
-    # TODO:                                                                 #
     # Compute the l2 distance between all test points and all training      #
     # points without using any explicit loops, and store the result in      #
     # dists.                                                                #
@@ -123,7 +118,15 @@ class KNearestNeighbor(object):
     # HINT: Try to formulate the l2 distance using matrix multiplication    #
     #       and two broadcast sums.                                         #
     #########################################################################
-    pass
+    # Approach 1: Space Complexity = O(numTest * numTrain * numPixels) => Large!
+    # Approach 1 will run out of memory error
+    # dists = np.sqrt(np.sum((np.reshape(X, (num_test, 1, -1)) - np.reshape(self.X_train, (1, num_train, -1)))**2, axis=2))
+    # Approach 2: Space Complexity = O(numTest*numTrain + numTest*numPixels + numTrain*numPixels)
+    # which is 100 * smaller than Approach1 for this assignment
+    xSqr = np.sum((X)**2, axis=1)
+    xTrainSqr = np.sum((self.X_train)**2, axis=1)
+    xMulXTrain = -2.0 * np.dot(X, np.transpose(self.X_train))
+    dists = np.sqrt(np.reshape(xSqr, (-1, 1)) + np.reshape(xTrainSqr, (1,-1)) + xMulXTrain)
     #########################################################################
     #                         END OF YOUR CODE                              #
     #########################################################################
@@ -144,29 +147,29 @@ class KNearestNeighbor(object):
     """
     num_test = dists.shape[0]
     y_pred = np.zeros(num_test)
-    for i in xrange(num_test):
+    for i in range(num_test):
       # A list of length k storing the labels of the k nearest neighbors to
       # the ith test point.
       closest_y = []
       #########################################################################
-      # TODO:                                                                 #
       # Use the distance matrix to find the k nearest neighbors of the ith    #
       # testing point, and use self.y_train to find the labels of these       #
       # neighbors. Store these labels in closest_y.                           #
       # Hint: Look up the function numpy.argsort.                             #
       #########################################################################
-      pass
+      # Sort the distances values and pick the smallest k
+      closestYIndices = np.argsort(dists[i])[:k]
       #########################################################################
-      # TODO:                                                                 #
       # Now that you have found the labels of the k nearest neighbors, you    #
       # need to find the most common label in the list closest_y of labels.   #
       # Store this label in y_pred[i]. Break ties by choosing the smaller     #
       # label.                                                                #
       #########################################################################
-      pass
+      closest_y = self.y_train[closestYIndices]
+      binPredictionClasses = np.bincount(closest_y)
+      maxPredictionClass = binPredictionClasses.argmax()
+      y_pred[i] = maxPredictionClass
       #########################################################################
       #                           END OF YOUR CODE                            # 
       #########################################################################
-
     return y_pred
-
