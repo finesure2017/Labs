@@ -1,6 +1,5 @@
 import numpy as np
 from random import shuffle
-from past.builtins import xrange
 
 def softmax_loss_naive(W, X, y, reg):
   """
@@ -22,19 +21,31 @@ def softmax_loss_naive(W, X, y, reg):
   """
   # Initialize the loss and gradient to zero.
   loss = 0.0
+  numTrain = X.shape[0]
+  numInputDim = X.shape[1]
+  numClass = W.shape[1]
   dW = np.zeros_like(W)
 
   #############################################################################
-  # TODO: Compute the softmax loss and its gradient using explicit loops.     #
+  # Compute the softmax loss and its gradient using explicit loops.     #
   # Store the loss in loss and the gradient in dW. If you are not careful     #
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  for currTrainIndex in range(numTrain):
+      den = 0.0
+      for currClassIndex in range(numClass):
+          den += np.exp(np.dot(X[currTrainIndex], W[:, currClassIndex]))
+      num = np.exp(np.dot(X[currTrainIndex], W[:, y[currTrainIndex]]))
+      # loss += -(1.0) * np.log(num/den)
+      loss += np.log(den) - np.dot(X[currTrainIndex], W[:,y[currTrainIndex]])
+  loss /= numTrain
+  loss += reg * np.sum(W * W)
+          
+  # dW += 
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
-
   return loss, dW
 
 
