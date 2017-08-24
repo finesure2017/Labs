@@ -36,7 +36,6 @@ class LinearClassifier(object):
 
     # Run stochastic gradient descent to optimize W
     loss_history = []
-    batchSize = int(np.floor(num_train/num_iters))
     for it in range(num_iters):
       X_batch = None
       y_batch = None
@@ -51,8 +50,12 @@ class LinearClassifier(object):
       # Hint: Use np.random.choice to generate indices. Sampling with         #
       # replacement is faster than sampling without replacement.              #
       #########################################################################
-      X_batch = X[it*batchSize:(it+1)*batchSize, :]
-      y_batch = y[it*batchSize:(it+1)*batchSize]
+      # batchSize = int(np.floor(num_train/num_iters))
+      # X_batch = X[it*batchSize:(it+1)*batchSize, :]
+      # y_batch = y[it*batchSize:(it+1)*batchSize]
+      indices = np.random.choice(num_train, batch_size, replace=True)
+      X_batch = X[indices]
+      y_batch = y[indices]
 
       #########################################################################
       #                       END OF YOUR CODE                                #
@@ -93,10 +96,9 @@ class LinearClassifier(object):
     """
     y_pred = np.zeros(X.shape[0])
     ###########################################################################
-    # TODO:                                                                   #
     # Implement this method. Store the predicted labels in y_pred.            #
     ###########################################################################
-    pass
+    y_pred = np.argmax(np.dot(X, self.W), axis=1)
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
