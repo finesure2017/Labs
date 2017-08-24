@@ -47,7 +47,6 @@ def svm_loss_naive(W, X, y, reg):
       if margin > 0:
         # Only include loss if more than margin => Loss is not 0
         loss += margin
-        # TEMP TODO FOR REFENCE: dW = np.zeros(W.shape) # (D, C)
         # Update for wrong class
         dW[:, j] += X[i]
         # Update for correct class
@@ -66,6 +65,8 @@ def svm_loss_naive(W, X, y, reg):
   # Add regularization to the loss.
   loss += reg * np.sum(W * W)
 
+  dW += 2*reg*W
+
   #############################################################################
   # Compute the gradient of the loss function and store it dW.                #
   # Rather that first computing the loss and then computing the derivative,   #
@@ -73,8 +74,6 @@ def svm_loss_naive(W, X, y, reg):
   # loss is being computed. As a result you may need to modify some of the    #
   # code above to compute the gradient.                                       #
   #############################################################################
-  # TODO: 
-
 
   return loss, dW
 
