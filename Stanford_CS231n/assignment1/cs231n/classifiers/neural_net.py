@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import numpy as np
 import matplotlib.pyplot as plt
-from past.builtins import xrange
 
 class TwoLayerNet(object):
   """
@@ -72,11 +71,17 @@ class TwoLayerNet(object):
     # Compute the forward pass
     scores = None
     #############################################################################
-    # TODO: Perform the forward pass, computing the class scores for the input. #
+    # Perform the forward pass, computing the class scores for the input. #
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    pass
+    firstHiddenLayer = np.dot(X, W1) + b1
+
+    # ReLU
+    firstHiddenLayer[np.where(firstHiddenLayer < 0)] = 0.0
+    finalLayer = np.dot(firstHiddenLayer, W2) + b2
+    scores = finalLayer
+
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -141,7 +146,7 @@ class TwoLayerNet(object):
     train_acc_history = []
     val_acc_history = []
 
-    for it in xrange(num_iters):
+    for it in range(num_iters):
       X_batch = None
       y_batch = None
 
@@ -217,3 +222,8 @@ class TwoLayerNet(object):
     return y_pred
 
 
+def mySoftmax(x):
+    num = np.exp(x)
+    den = np.sum(num, axis = 1)
+    fx = num/np.reshape(den, (-1, 1))
+    return fx
