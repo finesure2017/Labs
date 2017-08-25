@@ -19,9 +19,7 @@ class TwoLayerNet(object):
   """
 
   def __init__(self, input_size, hidden_size, output_size, std=1e-4):
-    """
-    Initialize the model. Weights are initialized to small random values and
-    biases are initialized to zero. Weights and biases are stored in the
+    """ Initialize the model. Weights are initialized to small random values and biases are initialized to zero. Weights and biases are stored in the
     variable self.params, which is a dictionary with the following keys:
 
     W1: First layer weights; has shape (D, H)
@@ -91,14 +89,47 @@ class TwoLayerNet(object):
       return scores
 
     # Compute the loss
-    loss = None
+    loss = 0.0
     #############################################################################
-    # TODO: Finish the forward pass, and compute the loss. This should include  #
+    # Finish the forward pass, and compute the loss. This should include  #
     # both the data loss and L2 regularization for W1 and W2. Store the result  #
     # in the variable loss, which should be a scalar. Use the Softmax           #
     # classifier loss.                                                          #
     #############################################################################
-    pass
+    # Softmax Loss Classifer 
+    # Note: Softmax Loss Classifier != L2 Loss != Cross Entropy Loss
+    # ECE521, you did L2 Loss by creating a 1 hot vector of the correct labels
+    # ECE521, also did Cross Entropy Loss and showed it was better for that problem.
+    # BUT ECE521 did not cover softmax loss classifer which you are doing here. 
+    # Softmax Loss Classifer simply maximizes the probability (M.L.E.) of the correct classes.
+    predictions = mySoftmax(scores)
+    correctPredictions = predictions[np.arange(N), y]
+    numClass = np.max(y) + 1
+    loss += -1.0 * np.sum(np.log(correctPredictions))
+    # Normalize by number of training samples
+    loss /= N
+    # Add the L2 regularization loss
+    loss += reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
+
+    '''
+    # L2 Loss would have been
+    numClasses = np.max(y) + 1
+    oneHotVector = np.zeros((N, numClasses))
+    oneHotVector[np.arange(N), y] = 1.0
+    L2Loss = (oneHotVector - predictions)**2
+    loss = L2Loss
+    loss /= N
+    loss += reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
+
+    # Cross Entropy Loss would have been
+    oneHotVectorlog(prediction) for every single prediction
+
+    # NOTE: You never ever predict based on maximum score in loss calculation and gradient backpropagation
+    # You only predict based on maximum score in accuracy calculation  
+    # for validation sets or test sets.
+    predictedClass = np.argmax(predictions, axis=1)
+    '''
+
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -220,7 +251,6 @@ class TwoLayerNet(object):
     ###########################################################################
 
     return y_pred
-
 
 def mySoftmax(x):
     num = np.exp(x)
