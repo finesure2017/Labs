@@ -36,13 +36,22 @@ def softmax_loss_naive(W, X, y, reg):
       den = 0.0
       for currClassIndex in range(numClass):
           den += np.exp(np.dot(X[currTrainIndex], W[:, currClassIndex]))
-      num = np.exp(np.dot(X[currTrainIndex], W[:, y[currTrainIndex]]))
+      inNum = np.dot(X[currTrainIndex], W[:, y[currTrainIndex]])
+      # num = np.exp(inNum)
       # loss += -(1.0) * np.log(num/den)
-      loss += np.log(den) - np.dot(X[currTrainIndex], W[:,y[currTrainIndex]])
+      loss += np.log(den) - inNum
+
+      for currClassIndex in range(numClass):
+          gradientNum = X[currTrainIndex] * np.exp(np.dot(X[currTrainIndex], W[:,  currClassIndex]))
+          dW[:, currClassIndex] += (gradientNum/den)
+          if currClassIndex == y[currTrainIndex]:
+              dW[:, currClassIndex] -= X[currTrainIndex]
+
   loss /= numTrain
+  dW /= numTrain 
+
   loss += reg * np.sum(W * W)
-          
-  # dW += 
+  dW += 2.0 * reg *  W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
