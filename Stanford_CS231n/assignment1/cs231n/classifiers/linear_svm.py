@@ -144,7 +144,7 @@ def svm_loss_vectorized(W, X, y, reg):
   # Normalize the gradient
   dW /= numTrain
   # Add regularization gradient
-  dW += 2*reg*W
+  dW += 2.0 * reg * W
   #############################################################################
   #                             END OF YOUR CODE                              #
   #############################################################################
