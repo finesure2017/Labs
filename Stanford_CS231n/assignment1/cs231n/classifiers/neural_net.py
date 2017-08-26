@@ -136,12 +136,47 @@ class TwoLayerNet(object):
 
     # Backward pass: compute gradients
     grads = {}
+    grads['W1'] = np.zeros(W1.shape)
+    grads['W2'] = np.zeros(W2.shape)
+    grads['b1'] = np.zeros(b1.shape)
+    grads['b2'] = np.zeros(b2.shape)
     #############################################################################
-    # TODO: Compute the backward pass, computing the derivatives of the weights #
+    # Compute the backward pass, computing the derivatives of the weights #
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
-    pass
+    finalLayer = np.dot(firstHiddenLayer, W2) + b2
+    # gradient for W2 is similar to softmax loss implemented earlier
+    # Except you replace the input which was X earlier to firstHiddenLayer now
+    # and the input output shape needs to be resized accordingly
+    dW2 = np.zeros(W2.shape)
+
+    num = np.exp(np.dot(firstHiddenLayer, W2)) 
+    den = np.sum(num, axis=1) 
+    result = num/np.reshape(den, (-1, 1)) 
+
+    dW2 += np.dot(np.transpose(firstHiddenLayer), result)
+
+    mask = np.zeros((firstHiddenLayer.shape[0], W2.shape[1]))
+    mask[np.arange(firstHiddenLayer.shape[0]), y] = 1.0
+    dW2 -= np.dot(np.transpose(firstHiddenLayer), mask) 
+    dW2 /= N # Still divide by number of training examples
+    dW2 += 2.0 * reg *  W2
+
+    # TODO:  gradients for db2, dW1, db1
+    db2 = np.zeros(b2.shape)
+
+
+
+
+    # TODO: 
+    dW1 = np.zeros(W1.shape)
+    # TODO: 
+    db1 = np.zeros(b1.shape)
+    grads['W2'] = dW2
+    grads['W1'] = dW1
+    grads['b2'] = db2
+    grads['b1'] = db1
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -182,10 +217,12 @@ class TwoLayerNet(object):
       y_batch = None
 
       #########################################################################
-      # TODO: Create a random minibatch of training data and labels, storing  #
+      # Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      pass
+      indices = np.random.choice(num_train, batch_size, replace=True)
+      X_batch = X[indices]
+      y_batch = y[indices]
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -195,12 +232,15 @@ class TwoLayerNet(object):
       loss_history.append(loss)
 
       #########################################################################
-      # TODO: Use the gradients in the grads dictionary to update the         #
+      # Use the gradients in the grads dictionary to update the         #
       # parameters of the network (stored in the dictionary self.params)      #
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      pass
+      self.params['W1'] -= learning_rate * grads['W1']
+      self.params['b1'] -= learning_rate * grads['W2']
+      self.params['W2'] -= learning_rate * grads['b1'] 
+      self.params['b2'] -= learning_rate * grads['b2']
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -243,13 +283,15 @@ class TwoLayerNet(object):
     y_pred = None
 
     ###########################################################################
-    # TODO: Implement this function; it should be VERY simple!                #
+    # Implement this function; it should be VERY simple!                #
     ###########################################################################
-    pass
+    scores = self.loss(X)
+    # Won't even need to perform softmax on the scores as it's just the maximum 
+    # For the softmax classifier
+    y_pred = np.argmax(scores, axis=1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
-
     return y_pred
 
 def mySoftmax(x):
