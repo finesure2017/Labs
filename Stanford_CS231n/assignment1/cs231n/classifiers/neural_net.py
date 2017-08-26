@@ -145,13 +145,17 @@ class TwoLayerNet(object):
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
+
+    #----------------------------------------------------------------------------
+    # Compute gradient for W2
+    #----------------------------------------------------------------------------
     finalLayer = np.dot(firstHiddenLayer, W2) + b2
     # gradient for W2 is similar to softmax loss implemented earlier
     # Except you replace the input which was X earlier to firstHiddenLayer now
     # and the input output shape needs to be resized accordingly
     dW2 = np.zeros(W2.shape)
 
-    num = np.exp(np.dot(firstHiddenLayer, W2)) 
+    num = np.exp(np.dot(firstHiddenLayer, W2) + b2) 
     den = np.sum(num, axis=1) 
     result = num/np.reshape(den, (-1, 1)) 
 
@@ -163,12 +167,26 @@ class TwoLayerNet(object):
     dW2 /= N # Still divide by number of training examples
     dW2 += 2.0 * reg *  W2
 
-    # TODO:  gradients for db2, dW1, db1
-    db2 = np.zeros(b2.shape)
+    #----------------------------------------------------------------------------
+    # Compute gradient for b2
+    #----------------------------------------------------------------------------
+    db2 = np.zeros(b2.shape) #(C)
+    num = np.exp(np.dot(firstHiddenLayer, W2) + b2) 
+    den = np.sum(num, axis=1) 
+    result = num/np.reshape(den, (-1, 1)) 
 
+    db2 += np.sum(result, axis = 0) 
 
+    # Only deduct ones for the correct classes
+    mask = np.zeros((N, b2.shape[0]))
+    mask[np.arange(firstHiddenLayer.shape[0]), y] = 1.0
+    db2 -= np.sum(mask, axis = 0)
 
+    db2 /= N
+    # No need regularization for bias since bias has a lot more data, and will be less likely to overfit.
 
+    #----------------------------------------------------------------------------
+    # TODO:  gradients for dW1, db1
     # TODO: 
     dW1 = np.zeros(W1.shape)
     # TODO: 
