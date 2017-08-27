@@ -149,12 +149,53 @@ class TwoLayerNet(object):
     #----------------------------------------------------------------------------
     # Compute gradient for W2
     #----------------------------------------------------------------------------
-    finalLayer = np.dot(firstHiddenLayer, W2) + b2
     # gradient for W2 is similar to softmax loss implemented earlier
     # Except you replace the input which was X earlier to firstHiddenLayer now
     # and the input output shape needs to be resized accordingly
-    dW2 = np.zeros(W2.shape)
+    num = np.exp(np.dot(firstHiddenLayer, W2) + b2)  # (N, C)
+    den = np.sum(num, axis=1) 
+    result = num/np.reshape(den, (-1, 1))  # (N, C)
+    # Deduct anywhere where the prediction is equal to the correct label
+    result[np.arange(N), y] -= 1.0
+    # Normalize by number of training 
+    # Also, the chain rule multiplies at each step,
+    # so doesn't matter if you take division by N first
+    result /= N # (N, C) 
 
+
+    # Approach 2: Figured out the gradients are shared before multiplying into them
+    # Gradients shared are:
+    # dLdZ for dW2 and db2
+    # dLdh1 for dW1 and db1
+    dLdZ = result # (N, C)
+    dLdV = np.dot(dLdZ, np.transpose(W2)) # (N, H)
+    # Handle ReLU, ReLU doesn't alter the shape, only stop gradients from propagating.
+    # since the gradients would multiply 0
+    dLdh1 = dLdV
+    dLdh1[np.where(firstHiddenLayer <= 0.0)] = 0.0 # (N, H)
+
+    dW2 = np.zeros(W2.shape) # (H, C)
+    db2 = np.zeros(b2.shape) # (C)
+    dW1 = np.zeros(W1.shape) # (D, H)
+    db1 = np.zeros(b1.shape) # (H)
+    #------------------------------------------------
+    dW2 += np.dot(np.transpose(firstHiddenLayer), dLdZ)
+    dW2 += 2.0 * reg *  W2 # Regularization
+    #------------------------------------------------
+    # Sum over the training examples for each class in the 2nd bias
+    # Since it multiplies by 1 for every class for every training example
+    db2 += np.sum(dLdZ, axis = 0)
+    #------------------------------------------------
+    dW1 += np.dot(np.transpose(X), dLdh1) # (D, H)
+    dW1 += 2.0 * reg *  W1 # Regularization
+    #------------------------------------------------
+    # Sum over the training examples for each hidden unit neuron out of H of them
+    db1 += np.sum(dLdh1, axis = 0) 
+    #------------------------------------------------
+    '''
+    Approach 1: Step by step of your first successful attempt at dW2 and db2
+                before realizing you could share the gradients
+    Maintain it to be here for future reference. 
     num = np.exp(np.dot(firstHiddenLayer, W2) + b2) 
     den = np.sum(num, axis=1) 
     result = num/np.reshape(den, (-1, 1)) 
@@ -184,13 +225,8 @@ class TwoLayerNet(object):
 
     db2 /= N
     # No need regularization for bias since bias has a lot more data, and will be less likely to overfit.
-
+    '''
     #----------------------------------------------------------------------------
-    # TODO:  gradients for dW1, db1
-    # TODO: 
-    dW1 = np.zeros(W1.shape)
-    # TODO: 
-    db1 = np.zeros(b1.shape)
     grads['W2'] = dW2
     grads['W1'] = dW1
     grads['b2'] = db2
@@ -256,8 +292,8 @@ class TwoLayerNet(object):
       # stored in the grads dictionary defined above.                         #
       #########################################################################
       self.params['W1'] -= learning_rate * grads['W1']
-      self.params['b1'] -= learning_rate * grads['W2']
-      self.params['W2'] -= learning_rate * grads['b1'] 
+      self.params['b1'] -= learning_rate * grads['b1']
+      self.params['W2'] -= learning_rate * grads['W2'] 
       self.params['b2'] -= learning_rate * grads['b2']
       #########################################################################
       #                             END OF YOUR CODE                          #
