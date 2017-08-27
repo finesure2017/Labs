@@ -20,10 +20,18 @@ def affine_forward(x, w, b):
     """
     out = None
     ###########################################################################
-    # TODO: Implement the affine forward pass. Store the result in out. You   #
+    # Implement the affine forward pass. Store the result in out. You   #
     # will need to reshape the input into rows.                               #
     ###########################################################################
-    pass
+    # TODO: 
+    D = 1
+    for d in x.shape:
+        D *= d
+    # Divide by number of samples
+    D /= x.shape[0]
+    # Convert back to int
+    D = int(D) 
+    out = np.dot(np.reshape(x, (-1, D)), w) + b
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
