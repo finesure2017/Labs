@@ -6,19 +6,18 @@ import numpy as np
 
 from cs231n import optim
 
-
 class Solver(object):
     """
     A Solver encapsulates all the logic necessary for training classification
     models. The Solver performs stochastic gradient descent using different
     update rules defined in optim.py.
 
-    The solver accepts both training and validataion data and labels so it can
+    The solver accepts both training and validation data and labels so it can
     periodically check classification accuracy on both training and validation
     data to watch out for overfitting.
 
     To train a model, you will first construct a Solver instance, passing the
-    model, dataset, and various optoins (learning rate, batch size, etc) to the
+    model, dataset, and various options (learning rate, batch size, etc) to the
     constructor. You will then call the train() method to run the optimization
     procedure and train the model.
 
@@ -37,7 +36,9 @@ class Solver(object):
       'X_val': # validation data
       'y_val': # validation labels
     }
+
     model = MyAwesomeModel(hidden_size=100, reg=10)
+
     solver = Solver(model, data,
                     update_rule='sgd',
                     optim_config={
@@ -248,7 +249,6 @@ class Solver(object):
         acc = np.mean(y_pred == y)
 
         return acc
-
 
     def train(self):
         """
