@@ -7,10 +7,6 @@ def affine_forward(x, w, b):
     The input x has shape (N, d_1, ..., d_k) and contains a minibatch of N
     examples, where each example x[i] has shape (d_1, ..., d_k). We will
     reshape each input into a vector of dimension D = d_1 * ... * d_k, and
-    then transform it to an output vector of dimension M.
-
-    Inputs:
-    - x: A numpy array containing input data, of shape (N, d_1, ..., d_k)
     - w: A numpy array of weights, of shape (D, M)
     - b: A numpy array of biases, of shape (M,)
 
@@ -23,15 +19,7 @@ def affine_forward(x, w, b):
     # Implement the affine forward pass. Store the result in out. You   #
     # will need to reshape the input into rows.                               #
     ###########################################################################
-    # TODO: 
-    D = 1
-    for d in x.shape:
-        D *= d
-    # Divide by number of samples
-    D /= x.shape[0]
-    # Convert back to int
-    D = int(D) 
-    out = np.dot(np.reshape(x, (-1, D)), w) + b
+    out = np.dot(np.reshape(x, (x.shape[0], -1)), w) + b
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -57,9 +45,13 @@ def affine_backward(dout, cache):
     x, w, b = cache
     dx, dw, db = None, None, None
     ###########################################################################
-    # TODO: Implement the affine backward pass.                               #
+    # Implement the affine backward pass.                               #
     ###########################################################################
-    pass
+    xReshape = np.reshape(x, (x.shape[0], -1))
+    dx = np.dot(dout, np.transpose(w))
+    dx = np.reshape(dx, x.shape)
+    dw = np.dot(np.transpose(xReshape), dout)
+    db = np.sum(np.transpose(dout), axis = 1)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
