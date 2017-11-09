@@ -1,5 +1,5 @@
 # Labs
-Lab learning materials from various courses. 
+My own solutions for assignment/materials from various courses. 
 
 ## Courses
 

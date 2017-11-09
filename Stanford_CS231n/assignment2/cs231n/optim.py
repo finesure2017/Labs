@@ -43,7 +43,6 @@ def sgd(w, dw, config=None):
     w -= config['learning_rate'] * dw
     return w, config
 
-
 def sgd_momentum(w, dw, config=None):
     """
     Performs stochastic gradient descent with momentum.
@@ -62,10 +61,11 @@ def sgd_momentum(w, dw, config=None):
 
     next_w = None
     ###########################################################################
-    # TODO: Implement the momentum update formula. Store the updated value in #
+    # Implement the momentum update formula. Store the updated value in #
     # the next_w variable. You should also use and update the velocity v.     #
     ###########################################################################
-    pass
+    # TODO: CONTINUE HERE!!!!!
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -95,11 +95,12 @@ def rmsprop(x, dx, config=None):
 
     next_x = None
     ###########################################################################
-    # TODO: Implement the RMSprop update formula, storing the next value of x #
+    # Implement the RMSprop update formula, storing the next value of x #
     # in the next_x variable. Don't forget to update cache value stored in    #
     # config['cache'].                                                        #
     ###########################################################################
-    pass
+    # TODO: 
+
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
