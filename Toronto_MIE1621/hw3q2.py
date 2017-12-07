@@ -1,4 +1,4 @@
-# Code for newton method for hw 2 question 3
+# Code for newton method for hw 3 question 2
 import math
 import numpy as np
 
