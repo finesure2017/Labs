@@ -19,7 +19,8 @@ class TwoLayerNet(object):
   """
 
   def __init__(self, input_size, hidden_size, output_size, std=1e-4):
-    """ Initialize the model. Weights are initialized to small random values and biases are initialized to zero. Weights and biases are stored in the
+    """ Initialize the model. Weights are initialized to small random values and biases are initialized to zero.
+    Weights and biases are stored in the
     variable self.params, which is a dictionary with the following keys:
 
     W1: First layer weights; has shape (D, H)
@@ -102,9 +103,15 @@ class TwoLayerNet(object):
     # ECE521, also did Cross Entropy Loss and showed it was better for that problem.
     # BUT ECE521 did not cover softmax loss classifer which you are doing here. 
     # Softmax Loss Classifer simply maximizes the probability (M.L.E.) of the correct classes.
+
+    # Get prediction of each class for each dataset
     predictions = mySoftmax(scores)
+    # Iterate through dataset from 0 to N-1, for each dataset, index out the probability for the correct class.
     correctPredictions = predictions[np.arange(N), y]
     numClass = np.max(y) + 1
+    # The closer the probability of the correct class is to 1.0, the lower the loss
+    # Notice that softmax loss only cares bout the value of the correct class, and ignores
+    # the probability given to all the other classes.
     loss += -1.0 * np.sum(np.log(correctPredictions))
     # Normalize by number of training samples
     loss /= N
@@ -116,12 +123,15 @@ class TwoLayerNet(object):
     numClasses = np.max(y) + 1
     oneHotVector = np.zeros((N, numClasses))
     oneHotVector[np.arange(N), y] = 1.0
+    # Notice: L2Loss cares bout both the correct class (1.0 - probabilityOfCorrectClass)**2
+    #         as well as the wrong classes (0.0 - probabilityOfWrongClass)**2
     L2Loss = (oneHotVector - predictions)**2
     loss = L2Loss
     loss /= N
     loss += reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
 
     # Cross Entropy Loss would have been
+    # Cross Entropy loss cares about both correct class and wrong classes as well
     oneHotVectorlog(prediction) for every single prediction
 
     # NOTE: You never ever predict based on maximum score in loss calculation and gradient backpropagation
@@ -160,8 +170,8 @@ class TwoLayerNet(object):
     # Normalize by number of training 
     # Also, the chain rule multiplies at each step,
     # so doesn't matter if you take division by N first
+    # since multiplication and division are commutative
     result /= N # (N, C) 
-
 
     # Approach 2: Figured out the gradients are shared before multiplying into them
     # Gradients shared are:
@@ -195,6 +205,7 @@ class TwoLayerNet(object):
     '''
     Approach 1: Step by step of your first successful attempt at dW2 and db2
                 before realizing you could share the gradients
+                Sharing gradient computation => Dynamic programming
     Maintain it to be here for future reference. 
     num = np.exp(np.dot(firstHiddenLayer, W2) + b2) 
     den = np.sum(num, axis=1) 

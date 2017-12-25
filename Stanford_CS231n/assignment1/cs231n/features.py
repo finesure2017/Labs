@@ -1,10 +1,18 @@
 from __future__ import print_function
 
+# This code was provided by Stanford CS231n course instructors,
+# This code was not written by SCL. 
+# Basically implements Histogram of Gradients, Color Histogram
+
 import matplotlib
 import numpy as np
 from scipy.ndimage import uniform_filter
 
 def extract_features(imgs, feature_fns, verbose=False):
+  '''
+  This method applies a bunch of feature functions that were designed by humans to images
+  and outputs a vector, where each dimension is a specific feature. 
+  '''
   """
   Given pixel data for images and several feature functions that can operate on
   single images, apply all feature functions to all images, concatenating the
