@@ -94,14 +94,14 @@ def svm_loss_vectorized(W, X, y, reg):
   # result in loss.                                                           #
   #############################################################################
 
-  scores = np.dot(X, W)
+  scores = np.dot(X, W) # (N, C)
   numTrain = X.shape[0]
   # Not sure if there's a better way to index, to create correctClassScore
-  correctClassScore = scores[np.arange(numTrain), y]
-  margin = scores - np.reshape(correctClassScore, (-1, 1)) + 1
-  lossPerClass = np.maximum(0, margin)
-  lossVector = np.sum(lossPerClass, axis=1)
-  totalLoss = np.average(lossVector)
+  correctClassScore = scores[np.arange(numTrain), y] # (N, 1)
+  margin = scores - np.reshape(correctClassScore, (-1, 1)) + 1 #(N, C)
+  lossPerClass = np.maximum(0, margin) # (N, C)
+  lossVector = np.sum(lossPerClass, axis=1) # (N, 1)
+  totalLoss = np.average(lossVector) #(1)
   totalLoss -= 1.0 # Deduct 1, which is the delta as added correct class score into margin
   # Add regularization to the loss.
   totalLoss += reg * np.sum(W * W)
@@ -118,29 +118,31 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
-  lossPerClass = np.maximum(0, margin)
+  lossPerClass = np.maximum(0, margin) # (N, C)
   # Make 0 for any where margin <= 0
   # Make 1 for any where margin > 0
   # Make -1 for any where it is the correct class
-  multiplication = np.zeros(lossPerClass.shape)
+  multiplication = np.zeros(lossPerClass.shape) # (N, C)
   yCorrectClass = np.zeros(lossPerClass.shape)
 
   posIndices = np.where(lossPerClass > 0)
   # Set whatever that needs to create an update to 1
-  multiplication[posIndices] = 1.0
+  # Wrong instances: initialize everything X multiples to be a positve X for wrong instances
+  multiplication[posIndices] = 1.0 
   # However, should not update those position that required update 
   # where the score computed was the correct class score. 
-  # Set all the correct class positions to 0
+  # Set all the correct class positions to 0, since the gradient cancels out for those correct class location
   multiplication[np.arange(numTrain), y] = 0.0
 
   # Sum across the rows to get the number of wrong instances for each training example
   # (N, 1)
-  values = (-1.0 * np.sum(multiplication, axis=1))
+  # Correct Instances: Sum the number of times you need to multiply X for correct instances and negate to get -X
+  values = (-1.0 * np.sum(multiplication, axis=1)) # (N, 1)
   # Set those rows to deduct x since it's correct examples
   # note: This line does not handle the score computed was correct class score
   # as you need it to all be 0.0 before calculating the values for below.
-  multiplication[np.arange(numTrain), y] = values
-  dW = np.dot(np.transpose(X), multiplication)
+  multiplication[np.arange(numTrain), y] = values # Update the multiplication table for those correct instances
+  dW = np.dot(np.transpose(X), multiplication) # Multiply with X based on the number of times you need to update
   # Normalize the gradient
   dW /= numTrain
   # Add regularization gradient
