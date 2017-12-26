@@ -131,6 +131,7 @@ class LinearSVM(LinearClassifier):
 
 class Softmax(LinearClassifier):
   """ A subclass that uses the Softmax + Cross-entropy loss function """
+  # TODO: Is it really cross-entropy loss or just Softmax Loss ? 
 
   def loss(self, X_batch, y_batch, reg):
     return softmax_loss_vectorized(self.W, X_batch, y_batch, reg)
