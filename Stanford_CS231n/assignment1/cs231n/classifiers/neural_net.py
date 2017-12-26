@@ -98,24 +98,46 @@ class TwoLayerNet(object):
     # classifier loss.                                                          #
     #############################################################################
     # Softmax Loss Classifer 
-    # Note: Softmax Loss Classifier != L2 Loss != Cross Entropy Loss
+    # Note: Softmax Loss Classifier != L2 Loss != Cross Entropy with Sigmoid Loss
     # ECE521, you did L2 Loss by creating a 1 hot vector of the correct labels
-    # ECE521, also did Cross Entropy Loss and showed it was better for that problem.
+    # ECE521, also did Cross Entropy with Sigmoid Loss and showed it was better for that problem.
     # BUT ECE521 did not cover softmax loss classifer which you are doing here. 
+    # Note: You are also doing cross-entropy here! 
+    # The only difference is here you are using a yHat = softmax(x) 
+    # whereas in ECE521, you are working with binary class and yHat = sigmoid(x)
     # Softmax Loss Classifer simply maximizes the probability (M.L.E.) of the correct classes.
+    # Since, sum over all ylog(yHat)  => 1log(yHat) + 0log(yHat) = 1log(yHat) = log(yHat)
+    # Hence, you only need to sum over correct classes as wrong classes cancels out due to 0
+    # Therefore, for:
+    #   Softmax, you only maximize over the correct classes, wrong classes should all be approaching 0
+    # You could also add the wrong classes by making them go to 0
+    # (1 - 0)log(1 - yHat) which means yHat for the wrong class should approach 0 to reduce loss
 
     # Get prediction of each class for each dataset
     predictions = mySoftmax(scores)
     # Iterate through dataset from 0 to N-1, for each dataset, index out the probability for the correct class.
-    correctPredictions = predictions[np.arange(N), y]
+    correctPredictions = predictions[np.arange(N), y] # (N, 1)
     numClass = np.max(y) + 1
     # The closer the probability of the correct class is to 1.0, the lower the loss
     # Notice that softmax loss only cares bout the value of the correct class, and ignores
-    # the probability given to all the other classes.
+    # the probability given to all the other classes (wrong classes)
+    # Since the coefficient will be 0 for those classes
+    # whereas the coefficient will be 1.0 for the correct class
+    # yCorrect(yCorrectHat) + yWronglog(yWrongHat) 
+    # = 1log(yhat) + 0log(yhat) = log(yHatCorrectClass) which is what you are doing here!
+    # And you need your yHat to be a probability so that it is bounded by (0, 1)
+    # If it is not bounded, then one class could dominate the loss reduction
+    # and you are reducing loss just by always predicting a class with high value
+    # instead of distributing equally towards all classes. 
     loss += -1.0 * np.sum(np.log(correctPredictions))
+
+    # Note: FIXME: 
+    # May need to add the wrong predictions as well 
+    # So that the probability for the wrong classes should go to 0
+    # loss += -1.0 * np.sum(np.log(1.0 - wrongPredictions))
+
     # Normalize by number of training samples
-    loss /= N
-    # Add the L2 regularization loss
+    loss /= N # Add the L2 regularization loss
     loss += reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
 
     '''
@@ -130,8 +152,8 @@ class TwoLayerNet(object):
     loss /= N
     loss += reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
 
-    # Cross Entropy Loss would have been
-    # Cross Entropy loss cares about both correct class and wrong classes as well
+    # Cross Entropy Loss withSigmoid would have been
+    # Cross entropy uses sigmoid for each class separately
     oneHotVectorlog(prediction) for every single prediction
 
     # NOTE: You never ever predict based on maximum score in loss calculation and gradient backpropagation
