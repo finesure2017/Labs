@@ -1,5 +1,9 @@
 # Labs
-My own solutions for assignment/materials from various courses. 
+My own solutions for assignment/materials from various courses and books
+
+## Books
+
+- TODO 
 
 ## Courses
 
