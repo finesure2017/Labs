@@ -1,0 +1,54 @@
+#!/bin/bash
+
+TESTER_PATH=$(dirname $(readlink -f $BASH_SOURCE))
+. $TESTER_PATH/setup
+
+PROG=$(basename $0)
+
+function usage() {
+    echo "Usage: $PROG -n lab_nr FILE..." 1>&2;
+    echo "   -h: show this message" 1>&2;
+    echo "   -n: specify the lab number" 1>&2;
+    echo "   lab_nr: run test on lab number (1-6)" 1>&2
+    echo "   FILE: files to distribute to the source folders" 1>&2
+    exit 1;
+}
+
+# getopts processing
+while getopts "hn:" ARG ; do
+    if [ ${ARG} = 'n' ]; then
+        NR=$OPTARG;
+        if ! [[ "$NR" =~ ^[0-9]+$ ]] ; then
+            usage;
+        fi
+    elif [ ${ARG} = 'h' ]; then
+        usage;
+    else
+        usage;
+    fi
+done
+
+shift $((OPTIND-1))
+
+if [ $# -lt 1 ]; then
+    usage;
+fi
+
+# checks if $1 lies between 1-6 (TOTAL_XX specified in setup)
+if [ -z $(eval echo \$TOTAL_$NR) ]; then
+    usage;
+fi
+
+DIR=$(eval echo \$DIR_$NR)
+for GROUP in $(seq -f "%03g" ${START} ${END}); do
+    # do we have access to the repository?
+    # students will have access to only their repository
+    if expr "$(groups)" : ".*os-${GROUP}" > /dev/null; then
+        MY_PATH=os-${GROUP}/$DIR
+        if [ -d "$MY_PATH" ]; then
+            for FILE in $@; do
+                cp -vf $FILE $MY_PATH
+            done
+        fi
+    fi
+done

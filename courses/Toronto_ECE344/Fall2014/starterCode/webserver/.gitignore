@@ -1,0 +1,14 @@
+*.o
+.depend
+TAGS
+client
+server
+fileset
+fileset_dir
+fileset_dir.idx
+plot-cachesize.out
+plot-cachesize.pdf
+plot-requests.out
+plot-requests.pdf
+plot-threads.out
+plot-threads.pdf

@@ -1,0 +1,37 @@
+#!/bin/bash
+
+TESTER_PATH=$(dirname $(readlink -f $BASH_SOURCE))
+. $TESTER_PATH/setup
+
+PROG=$(basename $0)
+
+PARENT_DIR='/srv/git'
+
+function usage() {
+    echo "Usage: $PROG lab_nr date" 1>&2;
+    echo "   -h: show this message" 1>&2;
+    echo "   lab_nr: run test on lab number (1-6)" 1>&2
+    echo "   date: should be in the format YYYY-MM-DD" 1>&2
+    echo "run this command on the git server machine" 1>&2
+    exit 1;
+}
+
+if [ $# -ne 2 ]; then
+    usage;
+fi
+
+NR=$1
+
+DATE=$2
+
+for dirname in ${PARENT_DIR}/os-*; do
+    cd $dirname/ece344
+    if [ $? -eq 0 ]; then
+        RESULT=`git log --tags --simplify-by-decoration \
+	    --pretty="format:%ci %d" --since="$DATE, 5pm" | \
+            grep [^_a-zA-Z0-9\-]Lab$NR-end[^_a-zA-Z0-9\-]`
+        if [ -n "$RESULT" ]; then
+            echo "${PWD}: ${RESULT}"
+        fi
+    fi
+done

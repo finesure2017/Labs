@@ -1,0 +1,40 @@
+#!/bin/bash
+
+TESTER_PATH=$(dirname $(readlink -f $BASH_SOURCE))
+. $TESTER_PATH/setup
+
+function usage() {
+    echo "Usage: $PROG assignment_nr" 1>&2;
+    echo "assignment_nr: run test on lab number" 1>&2
+    echo "               must be 0, 1, 2 or 3" 1>&2;
+    exit 1;
+}
+
+if [ $# -ne 1 ]; then
+    usage;
+fi
+
+if [ $1 != "0" -a $1 != "1" -a $1 != "2" -a $1 != "3" ]; then
+    usage;
+fi
+
+NR=$1
+
+if [ ! -s mail-$NR.mbox ]; then
+    echo "mail-$NR.mbox does not exist" 1>&2;
+    echo "use generate-mail to create this file" 1>&2;
+    exit 1;
+fi
+
+# this command will generate several files with the name xx00, xx01, ...
+csplit mail-$NR.mbox '/From MAILER-DAEMON/' '{*}' > /dev/null
+
+for i in xx*; do
+    # if file exists and its size is greater than zero
+    if [ -s $i ]; then
+        cat $i | /usr/sbin/sendmail -t
+    fi
+done
+
+rm -f xx*
+exit 0

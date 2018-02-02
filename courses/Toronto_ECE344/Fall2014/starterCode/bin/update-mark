@@ -1,0 +1,78 @@
+#!/bin/bash
+
+TESTER_PATH=$(dirname $(readlink -f $BASH_SOURCE))
+. $TESTER_PATH/setup
+
+function usage() {
+    echo "Usage: $PROG [-h] [-s start] [-e end] -n NR FILES" 1>&2;
+    echo "      -h: show this message" 1>&2;
+    echo "-s start: run marker starting from group 'start'" 1>&2;
+    echo "  -e end: run marker until group 'end'" 1>&2;
+    echo "   -n NR: assignment number (must be from 0 to 3)" 1>&2;
+    echo "   FILES: downloaded marks file(s) in csv format" 1>&2
+    exit 1;
+}
+
+# getopts processing
+while getopts "hn:s:e:" ARG ; do
+    if [ ${ARG} = 's' ]; then
+        START=$OPTARG;
+        if ! [[ "$START" =~ ^[0-9]+$ ]] ; then
+            usage;
+        fi
+    elif [ ${ARG} = 'e' ]; then
+        END=$OPTARG;
+        if ! [[ "$END" =~ ^[0-9]+$ ]] ; then
+            usage;
+        fi
+    elif [ ${ARG} = 'n' ]; then
+        NR=$OPTARG;
+        if ! [[ "$NR" =~ ^[0-9]+$ ]] ; then
+            usage;
+        fi
+    elif [ ${ARG} = 'h' ]; then
+        usage;
+    else
+        usage;
+    fi
+done
+
+shift $((OPTIND-1))
+
+if [ -z "$NR" ]; then
+    echo "Error: please specify a lab number"
+    usage;
+fi; 
+
+if [ $# -eq 0 ]; then
+    echo "Error: must supply at least one input file"
+    usage;
+fi
+
+COUNT=0
+for GROUP in $(seq -f "%03g" ${START} ${END}); do
+    get_marks $NR "tester-${GROUP}.out"
+    for LOGINID in $(grep "os-${GROUP}" /etc/group | cut -d ":" -f 4 | \
+        sed 's/,/ /g'); do
+        for FILE in $@; do 
+            LINE=$(grep ${LOGINID} ${FILE}) 2> /dev/null;
+            if [ -n "$LINE" ]; then
+                COUNT=$((COUNT+1))
+                perl -p -i -e "s/(.*?${LOGINID}.*?),\"([0-9]*)\"$/\1,\"${MARKS}\"/g" $FILE
+            fi
+        done
+    done
+done
+
+echo "${COUNT} student's grades have been updated"
+# the last line is used to subtract the header of each csv file
+NUM_ENTRIES=$(wc -l $@ | tail -n 1 | awk "{printf \"%s\", \$1-$#}")
+echo "${NUM_ENTRIES} entries have been detected"
+if [ $COUNT -ne $NUM_ENTRIES ]; then
+    DIFF=$((NUM_ENTRIES-COUNT))
+    echo "$DIFF student(s) did not receive their grade"
+fi
+
+
+
+

@@ -1,0 +1,134 @@
+#!/bin/bash
+
+TESTER_PATH=$(dirname $(readlink -f $BASH_SOURCE))
+. $TESTER_PATH/setup
+
+function usage() {
+    echo "Usage: $PROG [-h] [-s start] [-e end] [-p penalty] -n asst_nr [GROUP_NR..]" 1>&2;
+    echo "           -h: show this message" 1>&2;
+    echo "     -s start: generate mail starting from group 'start'" 1>&2;
+    echo "       -e end: generate mail until group 'end'" 1>&2;
+    echo "   -p penalty: assign a penalty (in percentage) to GROUP_NR" 1>&2;
+    echo "   -n asst_nr: generate mail for lab number (1-6)" 1>&2;
+    echo "     GROUP_NR: group(s) that will receive penalty" 1>&2;
+    exit 1;
+}
+
+PENALTY=20
+
+# getopts processing
+while getopts "hn:s:e:p:" ARG ; do
+    if [ ${ARG} = 's' ]; then
+        START=$OPTARG;
+        if ! [[ "$START" =~ ^[0-9]+$ ]] ; then
+            echo "Bad starting number"     
+            usage;
+        fi
+    elif [ ${ARG} = 'e' ]; then
+        END=$OPTARG;
+        if ! [[ "$END" =~ ^[0-9]+$ ]] ; then
+            usage;
+        fi
+    elif [ ${ARG} = 'n' ]; then
+	NR=$OPTARG;
+	# checks if $1 lies between 1-6 (TOTAL_XX specified in setup)
+	if [ -z $(eval echo \$TOTAL_$NR) ]; then
+	    echo "Bad assignment number: $NR" 
+	    usage;
+  	fi
+    elif [ ${ARG} = 'p' ]; then
+	PENALTY=$OPTARG;
+	if ! [[ "$PENALTY" =~ ^[0-9]+$ ]] ; then
+            usage;
+        fi
+    elif [ ${ARG} = 'h' ]; then
+        usage;
+    else
+        usage;
+    fi
+done
+
+shift $((OPTIND-1))
+
+if [ -z "$NR" ]; then
+    echo "Error: please specify a lab number"
+    usage;
+fi; 
+
+if [ ! -f "${ROSTER_FILE}" ]; then
+	echo "Roster file ${ROSTER_FILE} not found" 1>&2
+	exit 1
+fi
+
+# remove old mbox file, if it exists
+#rm -f mail-$NR.mbox
+
+for GROUP in $(seq -f "%03g" ${START} ${END}); do
+    get_marks $NR "tester-${GROUP}.out"
+    SHOULD_PENALIZE=0
+    for ARG in $@; do
+        if [ $((10#$ARG)) -eq $((10#$GROUP)) ]; then
+            SHOULD_PENALIZE=1
+            break
+        fi
+    done
+    if [ $SHOULD_PENALIZE -eq 1 ]; then
+        echo "Applying $PENALTY% penalty to os-$GROUP"
+        MARKS=$(((MARKS * (100 - PENALTY)) / 100))
+        cat <<EOF > msg.txt
+
+Dear Group ${GROUP},
+
+Your submission for Lab $NR has been marked.
+
+"You have received $MARKS marks out of a total of $TOTAL marks."
+
+A $PENALTY% penalty has been applied due to late submission.
+
+Please see the attached files for details.
+
+Please contact $TA with any questions.
+
+ECE344 TAs
+EOF
+    else
+        cat <<EOF > msg.txt
+
+Dear Group ${GROUP},
+
+Your submission for Lab $NR has been marked.
+
+"You have received $MARKS marks out of a total of $TOTAL marks."
+
+Please see the attached files for details.
+
+Please contact $TA with any questions.
+
+ECE344 TAs
+EOF
+    fi
+    EMAILS=""
+    for LOGINID in $(grep "os-${GROUP}" /etc/group | cut -d ":" -f 4 | \
+        sed 's/,/ /g'); do
+        LINE=$(grep ${LOGINID} ${ROSTER_FILE}) 2> /dev/null;
+        if [ -n "$LINE" ]; then
+            EMAIL=$(echo $LINE | awk -F, '{printf "%s", $5}');
+            if [ -z "$EMAILS" ]; then
+                EMAILS="$EMAIL"
+            else
+                EMAILS="$EMAILS, $EMAIL"
+            fi
+        fi
+    done
+
+    if [ -n "$EMAILS" ]; then
+        ${TESTER_PATH}/mail.py -t "$TA" -m "$EMAILS" -f msg.txt \
+            -a $NR -g ${GROUP}
+    else
+        echo "Warning: cannot find e-mail address for Group ${GROUP}"
+    fi
+done
+
+rm msg.txt
+
+exit 0
