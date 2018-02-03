@@ -6,7 +6,7 @@
 #include <stdio.h> // for debugging purposes 
 #include <unistd.h> 
 
-//#define DEBUG_PRINT 
+#define DEBUG_PRINT 
 
 // Running Queue
 // Deleted Queue
@@ -81,9 +81,9 @@ void printWaitQueue(struct wait_queue *queue)
 {
 	if(!queue) 
 	{
-// #ifdef DEBUG_PRINT
+#ifdef DEBUG_PRINT
 		unintr_printf("WAITQUEUE NOINTIALIZED\n");
-// #endif
+#endif
 		return; 
 	}
 	

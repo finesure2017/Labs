@@ -1,29 +1,30 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
-typedef int Tid;
+typedef int Tid; // Thread ID
 #define THREAD_MAX_THREADS 1024
 #define THREAD_MIN_STACK 32768
 
 /*
- * Tids between 0 and THREAD_MAX_THREADS-1 may
- * refer to specific threads and negative Tids
- * are used for error codes or control codes.
- * The first thread to run (before thread_create
- * is called for the first time) must be Tid 0.
- */
+Tids between 0 and THREAD_MAX_THREADS-1 may
+refer to specific threads and negative Tids
+are used for error codes or control codes.
+The first thread to run (before thread_create
+is called for the first time) must be Tid 0.
+*/
 
-enum { THREAD_ANY = -1,
+enum 
+{ 
+    THREAD_ANY = -1,
 	THREAD_SELF = -2,
-	THREAD_INVALID = -3,
+	THREAD_INVALID = -3, // identifier given doesn't correspond to any thread
 	THREAD_NONE = -4,
-	THREAD_NOMORE = -5,
-	THREAD_NOMEMORY = -6,
+	THREAD_NOMORE = -5, // no more threads 
+	THREAD_NOMEMORY = -6, //  no more memory to create a thread stack
 	THREAD_FAILED = -7
 };
 
-static inline int
-thread_ret_ok(Tid ret)
+static inline int thread_ret_ok(Tid ret)
 {
 	return (ret >= 0 ? 1 : 0);
 }
@@ -35,11 +36,14 @@ thread_ret_ok(Tid ret)
 /* perform any initialization needed by your threading system */
 void thread_init(void);
 
-/* create a thread that start running the function fn(arg). Upon success, return
- * the thread identifier. On failure, return the following:
- *
- * THREAD_NOMORE: no more threads can be created.
- * THREAD_NOMEMORY: no more memory available to create a thread stack. */
+/* create a thread that start running the function fn(arg). 
+returns:
+    Success: 
+        thread identifier. 
+    Failure:
+        THREAD_NOMORE: no more threads can be created.
+        THREAD_NOMEMORY: no more memory available to create a thread stack.
+*/
 Tid thread_create(void (*fn) (void *), void *arg);
 
 /* suspend calling thread and run the thread with identifier tid. The calling
@@ -113,6 +117,7 @@ int thread_wakeup(struct wait_queue *queue, int all);
  * queue with the lock so that threads that need to acquire the lock can wait in
  * this queue. */
 struct lock *lock_create();
+
 /* destroy the lock. be sure to check that the lock is available when it is
  * being destroyed. */
 void lock_destroy(struct lock *lock);
@@ -120,6 +125,7 @@ void lock_destroy(struct lock *lock);
 /* acquire the lock. threads should be suspended until they can acquire the
  * lock. */
 void lock_acquire(struct lock *lock);
+
 /* release the lock. be sure to check that the lock had been acquired by the
  * calling thread, before it is released. wakeup all threads that are waiting to
  * acquire the lock. */
@@ -128,6 +134,7 @@ void lock_release(struct lock *lock);
 /* create a condition variable. associate a wait queue with the condition
  * variable so that threads issuing cv_wait can wait in this queue. */
 struct cv *cv_create();
+
 /* destroy the condition variable. */
 void cv_destroy(struct cv *cv);
 

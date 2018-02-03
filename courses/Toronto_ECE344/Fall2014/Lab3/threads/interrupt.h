@@ -18,8 +18,10 @@
 
 // Register interrupt handler 
 void register_interrupt_handler(int verbose);
+
 // Turn interrupts On (Enable interrupts)  
 int interrupts_on(void); // (a wrapper to interrupt_set)
+
 // Disable interrupts 
 int interrupts_off(void); // (a wrapper to interrupt_set) 
 

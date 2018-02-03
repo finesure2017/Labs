@@ -45,6 +45,9 @@ int threadAlive[THREAD_MAX_THREADS]; // 0 if no thread, 1 if thread exists
 void thread_stub(void (*thread_main)(void *), void *arg) // helper function for thread_create() 
 {
 	Tid ret;
+    // thread_main is a function pointer to some function to execute
+    // arg are the arguments for the function pointed by the function pointer
+    // Call the given function with the given argument
 	thread_main(arg); // call thread_main() function with arg
 	ret = thread_exit(THREAD_SELF);
 	// we should only get here if we are the last thread. 
@@ -123,19 +126,33 @@ Tid thread_create(void (*fn) (void *), void *parg)
 	{
 		return THREAD_NOMEMORY; 
 	}
+    // Make a copy of the current thread's context
+    // To be able to fill it up with the latest Thread Control Block information
+    // Do not context switch yet. 
 	getcontext(&(newThread->context)); 
+    // Update the values of the context
+    // Program Counter of newly created thread points to function thread_stub
 	newThread->context.uc_mcontext.gregs[REG_RIP] = (unsigned long) thread_stub; // used thread stub 
+    // Allocate a new stack for the thread
 	char* temp = (char *) malloc(THREAD_MIN_STACK*sizeof(char)); 
 	if(!temp)
 	{
 		return THREAD_NOMEMORY; 
 	}
+    // Point ss_sp to base of stack
 	newThread->context.uc_stack.ss_sp = temp; // check if stack can be allocated
+    // Set the size of the stack pointer so it knows how far it has in the stack
 	newThread->context.uc_stack.ss_size = THREAD_MIN_STACK; 
+    // Make stack pointer register point to end of stack 
 	newThread->context.uc_mcontext.gregs[REG_RSP] = (unsigned long) temp + THREAD_MIN_STACK;
+    // Set the 1st argument as a function pointer to execute any arbitrary function
+    // The arbitrary function is passed into this thread create
 	newThread->context.uc_mcontext.gregs[REG_RDI] = (unsigned long) fn; 
+    //  Set the 2nd (secondary) argument
+    //  Set the arguments of this function to the new context
 	newThread->context.uc_mcontext.gregs[REG_RSI] = (unsigned long) parg; 
-			
+	
+    // Set this new thread to running    
 	newThread->tid = new; 
 	newThread->state = RUNNING; 
 	newThread->next = NULL; 
@@ -187,6 +204,9 @@ Tid thread_yield(Tid want_tid)
 	// If can run any thread in ready queue, 
 	if (want_tid == THREAD_ANY)
 	{
+        // Make curr point to current thread
+        // which is at the head of the run queue
+        // Set it to WAITING and place it all the way at the end of the runQueue
 		struct thread* curr = headRunQueue; 
 		struct thread* curr2; 
 		
@@ -194,6 +214,8 @@ Tid thread_yield(Tid want_tid)
 			return THREAD_NONE; 
 		else 
 		{
+            // Let curr2 point to end of linkedlist to be able to attach
+            // currently running thread there.
 			curr2 = curr; 
 			while(curr2->next)
 				curr2 = curr2->next; 
@@ -204,9 +226,18 @@ Tid thread_yield(Tid want_tid)
 			curr->next = NULL; 
 			int id = headRunQueue->tid; 
 			getcontext(&(curr->context)); 
+            // GetContext will return twice
+            // first time is immediately (when flag still = 0)
+            // so you can contextSwitch to the next thread
+            // 2nd time is when you finally context switch back to this thread
+            // but the  flag would have been 1, so you wont just context switch out again
+            // instead,  you will reset back the flag to 0 and just return
+            // the id of the created thread that it was successfully created
 			if (!flag)
 			{
+                // S
 				flag = 1; 
+                // Context switch to the new thread that was at the head of the run queue
 				setcontext(&(headRunQueue->context)); 
 			}
 			else
