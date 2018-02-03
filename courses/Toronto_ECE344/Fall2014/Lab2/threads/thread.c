@@ -128,7 +128,7 @@ Tid thread_create(void (*fn) (void *), void *parg)
 	}
     // Make a copy of the current thread's context
     // To be able to fill it up with the latest Thread Control Block information
-    // Do not context switch yet. 
+    // Does not context switch yet. 
 	getcontext(&(newThread->context)); 
     // Update the values of the context
     // Program Counter of newly created thread points to function thread_stub
@@ -152,7 +152,7 @@ Tid thread_create(void (*fn) (void *), void *parg)
     //  Set the arguments of this function to the new context
 	newThread->context.uc_mcontext.gregs[REG_RSI] = (unsigned long) parg; 
 	
-    // Set this new thread to running    
+    // Set this new thread to running and add it to end of runQueue
 	newThread->tid = new; 
 	newThread->state = RUNNING; 
 	newThread->next = NULL; 
@@ -230,9 +230,15 @@ Tid thread_yield(Tid want_tid)
             // first time is immediately (when flag still = 0)
             // so you can contextSwitch to the next thread
             // 2nd time is when you finally context switch back to this thread
-            // but the  flag would have been 1, so you wont just context switch out again
-            // instead,  you will reset back the flag to 0 and just return
+            // but the flag would have been 1, so you wont just context switch out again
+            // instead, you will reset back the flag to 0 and just return
             // the id of the created thread that it was successfully created
+            // It will return from where getcontext was last called
+            // if you yielded using setcontext
+            // you can think of getcontext here as like a saving checkpoint
+            // for the current thread before context switching
+            // However, without calling setcontext, get context will simply just copy
+            // memory as done in thread_create() method
 			if (!flag)
 			{
                 // S
