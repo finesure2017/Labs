@@ -192,7 +192,7 @@ void addWaitQueue(struct wait_queue *queue,struct thread* curr)
  * thread_main() function, and one argument to the thread_main() function. */
 void thread_stub(void (*thread_main)(void *), void *arg) // helper function for thread_create() 
 {
-	int enabled = interrupts_on(); 
+	int enabled = interrupts_on(); // for blocking locks, the next thread needs to enable interrupts again.
 	Tid ret;
 	thread_main(arg); // call thread_main() function with arg
 	ret = thread_exit(THREAD_SELF);
@@ -620,6 +620,7 @@ Tid thread_sleep(struct wait_queue *queue)
 	
 	assert(threadAlive[headRunQueue->tid] == 1); // should already be 1
 	threadAlive[headRunQueue->tid] = 1; 
+    // note: Wait queue can be part of lock or condition variable
 	addWaitQueue(queue,curr); // add to end of Wait Queue, or at beginning if no elements 
 	threadAlive[curr->tid] = 2;  
 
@@ -628,12 +629,12 @@ Tid thread_sleep(struct wait_queue *queue)
 	if (!flag)
 	{
 		flag = 1; 
-		setcontext(&(headRunQueue->context)); 
+		setcontext(&(headRunQueue->context));  // the new thread will enable interrupts always
 	}
 	else
 	{
 		flag = 0; 
-		interrupts_set(enabled);
+		interrupts_set(enabled); // always restore interrupt state first
 		return id; 
 	}
 	assert(0); // should never come here 
@@ -756,7 +757,7 @@ void lock_acquire(struct lock *lock)
 	// Add to wait queue if not available 
 	while(!lock->available)
 	{
-		thread_sleep(lock->queue);  // get the latest head run queue 
+		thread_sleep(lock->queue);  // put myself into the wait queue for the lock, and then context switch to new thread
 	}
 	// If lock available
 	lock->available = 0; // set it to unavailable
@@ -837,7 +838,9 @@ void cv_wait(struct cv *cv, struct lock *lock)
 	lock_release(lock); 
 	// Add to wait queue if not available
 	thread_sleep(cv->queue);
-	lock_acquire(lock); 
+	lock_acquire(lock); // may wait at the lock's wait queue itself
+
+    // When the calling thread returns from cv_wait, the calling thread always holds the lock.
 	return; 
 }
 
