@@ -1,55 +1,47 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import io
-from scipy.optimize import minimize
 import math
+import cvxpy as cp
 
+def partA(x, y):
+    a = cp.Variable()
+    b = cp.Variable()
+    c = cp.Variable()
+    yHat = a*(x**2) + b*(x) + c
+    objective = cp.Minimize(cp.sum((y - yHat)**2))
+    problem = cp.Problem(objective, None)
+    result = problem.solve()
+    return (a.value, b.value, c.value)
+
+def partB(x, y):
+    a = cp.Variable()
+    b = cp.Variable()
+    c = cp.Variable()
+    yHat = a*(x**2) + b*(x) + c
+    objective = cp.Minimize(cp.sum(y - yHat))
+    # The noise is positive, so the difference in prediction should be more thna 0
+    constraint = [y - yHat >= 0]
+    problem = cp.Problem(objective, constraint)
+    result = problem.solve()
+    return (a.value, b.value, c.value)
 
 data = io.loadmat("hw1data.mat")
-x = data['x']
-y = data['y']
+x = np.squeeze(data['x'])
+y = np.squeeze(data['y'])
+indices = np.argsort(x)
+x = x[indices]
+y = y[indices]
 
-def fun1(varX):
-    x1 = x.copy()
-    y1 = y.copy()
-    res = 0.0;
-    for (i, j) in zip(x1,y1):
-        res +=( j - (varX[0]*i + varX[1]))**2
-    return res
+(a, b, c) = partA(x.copy(), y.copy())
+yhatA= a*(x**2) + b*x + c
 
-#----------------------
+(a, b, c) = partB(x.copy(), y.copy())
+yhatB= a*(x**2) + b*x + c
 
-x0 = [0.0, 0.0]
-
-res = minimize(fun1, x0)
-print(res.x)
-plt.scatter(x, y)
-resY = x*res.x[0] + res.x[1] 
-plt.plot(x, resY)
-plt.savefig("firstPlot.png")
-plt.clf()
-#----------------------
-#x2 = x.copy()
-#y2 = y.copy()
-
-x0 = [0.0, 0.0]
-
-def fun2(varX):
-    x1 = x.copy()
-    y1 = y.copy()
-    res = 0.0;
-    for (i, j) in zip(x1,y1):
-        res += math.fabs(j - (varX[0]*i + varX[1]))
-    return res
-
-res = minimize(fun2, x0)
-print(res.x)
-plt.scatter(x, y)
-resY = x*res.x[0] + res.x[1] 
-plt.plot(x, resY)
-plt.savefig("secondPlot.png")
-
-# Final values pasted below: 
-# 8.a) => [  3.48630142  61.16321456]
-# 8.b) => [  3.59688303  17.97875709]
-
+# Plot results
+plt.plot(x, y, label='y')
+plt.plot(x, yhatA, label='yhatA')
+plt.plot(x, yhatB, label='yhatB')
+plt.legend()
+plt.savefig("allInOne.png")
