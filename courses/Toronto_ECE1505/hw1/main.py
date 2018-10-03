@@ -20,7 +20,7 @@ def partB(x, y):
     c = cp.Variable()
     yHat = a*(x**2) + b*(x) + c
     objective = cp.Minimize(cp.sum(y - yHat))
-    # The noise is positive, so the difference in prediction should be more thna 0
+    # The noise is positive, so the difference in prediction should be more than 0
     constraint = [y - yHat >= 0]
     problem = cp.Problem(objective, constraint)
     result = problem.solve()
