@@ -1,0 +1,32 @@
+digraph Tree {
+node [shape=box] ;
+0 [label="the <= 0.5\nentropy = 0.969\nsamples = 2287\nvalue = [909, 1378]\nclass = real"] ;
+1 [label="donald <= 0.5\nentropy = 0.926\nsamples = 1924\nvalue = [656, 1268]\nclass = real"] ;
+0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+2 [label="hillary <= 0.5\nentropy = 0.982\nsamples = 1286\nvalue = [542, 744]\nclass = real"] ;
+1 -> 2 ;
+3 [label="(...)"] ;
+2 -> 3 ;
+478 [label="(...)"] ;
+2 -> 478 ;
+485 [label="le <= 0.5\nentropy = 0.677\nsamples = 638\nvalue = [114, 524]\nclass = real"] ;
+1 -> 485 ;
+486 [label="(...)"] ;
+485 -> 486 ;
+671 [label="(...)"] ;
+485 -> 671 ;
+672 [label="trumps <= 0.5\nentropy = 0.885\nsamples = 363\nvalue = [253, 110]\nclass = fake"] ;
+0 -> 672 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+673 [label="hillary <= 0.5\nentropy = 0.847\nsamples = 347\nvalue = [252, 95]\nclass = fake"] ;
+672 -> 673 ;
+674 [label="(...)"] ;
+673 -> 674 ;
+833 [label="(...)"] ;
+673 -> 833 ;
+834 [label="war <= 0.5\nentropy = 0.337\nsamples = 16\nvalue = [1, 15]\nclass = real"] ;
+672 -> 834 ;
+835 [label="(...)"] ;
+834 -> 835 ;
+836 [label="(...)"] ;
+834 -> 836 ;
+}

@@ -1,0 +1,17 @@
+criterion = gini, depth = 5, validationAccuracy = 0.7034764826175869
+criterion = gini, depth = 10, validationAccuracy = 0.6993865030674846
+criterion = gini, depth = 100, validationAccuracy = 0.7239263803680982
+criterion = gini, depth = 200, validationAccuracy = 0.7239263803680982
+criterion = gini, depth = None, validationAccuracy = 0.7239263803680982
+criterion = entropy, depth = 5, validationAccuracy = 0.7014314928425358
+criterion = entropy, depth = 10, validationAccuracy = 0.6973415132924335
+criterion = entropy, depth = 100, validationAccuracy = 0.7198364008179959
+criterion = entropy, depth = 200, validationAccuracy = 0.7321063394683026
+criterion = entropy, depth = None, validationAccuracy = 0.7259713701431493
+bestCriterion = entropy, bestDepth = 200, maxValidAccuracy = 0.7321063394683026, testAccuracy = 0.7408163265306122
+Word = trump, informationGain = 0.03604646543849388
+Word = donald, informationGain = 0.047632623717864586
+Word = hillary, informationGain = 0.0353197213188684
+Word = the, informationGain = 0.050187537139538274
+Word = trumps, informationGain = 0.04591824908230524
+Word = here, informationGain = 0.005107066410498073
