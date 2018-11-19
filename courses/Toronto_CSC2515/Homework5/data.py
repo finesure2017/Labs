@@ -1,10 +1,13 @@
 import zipfile
 import numpy as np
 
+# NOTE: No changing this file as not submitting it
+# Thus, only added comments to existing code
+
 import os
 
 # (PLEASE DO NOT CHANGE) Set random seed:
-np.random.seed(1746)
+np.random.seed(1746) # Shuffles the order of data in train and order of data in test
 
 PREFIX = "digit_"
 
